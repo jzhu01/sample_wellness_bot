@@ -11,12 +11,16 @@ from botbuilder.core import (
     BotFrameworkAdapterSettings,
     TurnContext,
     BotFrameworkAdapter,
+    ConversationState,
+    MemoryStorage,
+    UserState
 )
 from botbuilder.core.integration import aiohttp_error_middleware
 from botbuilder.schema import Activity, ActivityTypes
 
 from bot import MyBot
 from config import DefaultConfig
+from dialogs.user_checkin_dialog import UserCheckinDialog
 
 CONFIG = DefaultConfig()
 
@@ -56,8 +60,13 @@ async def on_error(context: TurnContext, error: Exception):
 
 ADAPTER.on_turn_error = on_error
 
+MEMORY = MemoryStorage()
+CONVERSATION_STATE = ConversationState(MEMORY)
+USER_STATE = UserState(MEMORY)
+
 # Create the Bot
-BOT = MyBot()
+DIALOG = UserCheckinDialog(USER_STATE)
+BOT = MyBot(CONVERSATION_STATE, USER_STATE, DIALOG)
 
 
 # Listen for incoming requests on /api/messages
