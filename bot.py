@@ -27,6 +27,7 @@ class MyBot(ActivityHandler):
             self.user_state = user_state
             self.dialog = dialog
 
+
     async def on_members_added_activity(
         self,
         members_added: ChannelAccount,
@@ -34,10 +35,13 @@ class MyBot(ActivityHandler):
     ):
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
-                # currUser = await self.user_state.set_property_value( turn_context, "UserEmotionAtCheckIn", UserEmotionAtCheckIn)
-                # currUser.set_user(member.name)
+                curr_user = await self.user_state.user_profile_accessor.get(
+                    turn_context, UserEmotionAtCheckIn
+                )
+                curr_user.set_username(member.name)
+                curr_user.set_userid(member.id)
                 message = Activity(
-                    text=f"Hello {member.name}! Let's check in! (Type anything to begin)",
+                    text=f"Hello {curr_user.name}! Let's check in! (Type anything to begin)",
                     type=ActivityTypes.message
                 )
                 await turn_context.send_activity(message)

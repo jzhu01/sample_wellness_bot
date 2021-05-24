@@ -11,7 +11,7 @@ from botbuilder.dialogs.prompts import (
     PromptOptions
 )
 from botbuilder.dialogs.choices import Choice
-from botbuilder.core import MessageFactory, UserState
+from botbuilder.core import MessageFactory, UserState, turn_context
 
 from models import UserEmotionAtCheckIn
 
@@ -19,9 +19,7 @@ class UserCheckinDialog(ComponentDialog):
     def __init__(self, user_state: UserState):
         super(UserCheckinDialog, self).__init__(UserCheckinDialog.__name__)
         self.user_state = user_state
-
-        self.user_profile_accessor = self.user_state.create_property("UserEmotionAtCheckIn")
-
+        self.user_state.user_profile_accessor = self.user_state.create_property("UserEmotionAtCheckIn")
         self.add_dialog(
             WaterfallDialog(
                 WaterfallDialog.__name__,
@@ -107,11 +105,10 @@ class UserCheckinDialog(ComponentDialog):
     ) -> DialogTurnResult:
         if step_context.result:
 
-            user_current_emotion = await self.user_profile_accessor.get(
+            user_current_emotion = await self.user_state.user_profile_accessor.get(
                 step_context.context, UserEmotionAtCheckIn
             )
 
-            #todo: get the username and maybe profile pic from the channel
             user_current_emotion.icon = step_context.values["icon"]
             user_current_emotion.emotion = step_context.values["emotion"]
             user_current_emotion.context = step_context.values["context"]
