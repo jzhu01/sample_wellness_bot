@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
 class UserEmotionAtCheckIn:
 
-    def __init__(self, icon: str = None, emotion: str = None, context: str = None):
-        self.icon = icon
-        self.emotion = emotion
-        self.context = context
-        self.time = None
+    def __init__(self):
+        self.time_of_last_checkin = None
         self.name = None
         self.userid = None
+        self.emotions = [] # this will be a list of dict, each emotion will be it's own dict
+        self.daily_checkin_time = None
 
     def set_username(self, user):
         self.name = user
@@ -15,8 +14,10 @@ class UserEmotionAtCheckIn:
     def set_userid(self, userid):
         self.userid = userid
 
-    def update_timestamp(self):
-        self.time = datetime.now(tz=timezone.utc)
+    def add_emotion(self, emotion):
+       self.emotions.append(vars(emotion))
+       self.time_of_last_checkin = emotion.time
 
-    def set_time(self, updated_time):
-        self.time = updated_time
+    def get_emotions(self):
+        return self.emotions
+

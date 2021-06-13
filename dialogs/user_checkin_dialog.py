@@ -1,3 +1,5 @@
+from storage.mongo_connnector import MongoConnection
+from models.emotion import Emotion
 from botbuilder.dialogs import (
     ComponentDialog,
     WaterfallDialog,
@@ -11,15 +13,15 @@ from botbuilder.dialogs.prompts import (
     PromptOptions
 )
 from botbuilder.dialogs.choices import Choice
-from botbuilder.core import MessageFactory, UserState, turn_context
+from botbuilder.core import MessageFactory, UserState
 
-from models import UserEmotionAtCheckIn
-
+from models import UserEmotionAtCheckIn, Emotion
 class UserCheckinDialog(ComponentDialog):
-    def __init__(self, user_state: UserState):
+    def __init__(self, user_state: UserState, mongo: MongoConnection):
         super(UserCheckinDialog, self).__init__(UserCheckinDialog.__name__)
         self.user_state = user_state
         self.user_state.user_profile_accessor = self.user_state.create_property("UserEmotionAtCheckIn")
+        self.user_state.emotion_profile_accessor = self.user_state.create_property("Emotion")
         self.add_dialog(
             WaterfallDialog(
                 WaterfallDialog.__name__,
@@ -37,6 +39,7 @@ class UserCheckinDialog(ComponentDialog):
         self.add_dialog(ConfirmPrompt(ConfirmPrompt.__name__))
 
         self.initial_dialog_id = WaterfallDialog.__name__
+        self.mongo = mongo
 
     async def icon_checkin_step(
         self, step_context: WaterfallStepContext
@@ -105,21 +108,27 @@ class UserCheckinDialog(ComponentDialog):
     ) -> DialogTurnResult:
         if step_context.result:
 
-            user_current_emotion = await self.user_state.user_profile_accessor.get(
+            curr_user = await self.user_state.user_profile_accessor.get(
                 step_context.context, UserEmotionAtCheckIn
             )
 
-            user_current_emotion.icon = step_context.values["icon"]
-            user_current_emotion.emotion = step_context.values["emotion"]
-            user_current_emotion.context = step_context.values["context"]
-            user_current_emotion.update_timestamp()
+            curr_emotion = await self.user_state.emotion_profile_accessor.get(
+                step_context.context, Emotion
+            )
+
+            curr_emotion.icon = step_context.values["icon"]
+            curr_emotion.emotion = step_context.values["emotion"]
+            curr_emotion.context = step_context.values["context"]
+            curr_emotion.set_time()
+
+            curr_user.add_emotion(curr_emotion)
 
             #todo: might be good to set this up as an adaptive card to make it look nicer
-            msg = f"I have your current icon set as {user_current_emotion.icon} and your emotion as {user_current_emotion.emotion}, with the context being: {user_current_emotion.context}."
-
-            await step_context.context.send_activity(MessageFactory.text(msg))
+            msg = f"I have your current icon set as {curr_emotion.icon} and your emotion as {curr_emotion.emotion}, with the context being: {curr_emotion.context}. This was recorded at {curr_emotion.time}"
 
             #todo: hook this up to a mongodb persistence
+            self.mongo.persist(curr_user)
+            await step_context.context.send_activity(MessageFactory.text(msg))
 
         else:
             # todo: find a way to restart the dialog here if the user chooses to continue

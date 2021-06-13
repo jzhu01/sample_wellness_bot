@@ -1,0 +1,15 @@
+{
+    "_id": ObjectId("60c6218f8cf589fee3d51fb0"),
+    "time_of_last_checkin": "06-13-2021 15:17:18.577876",
+    "name": "User",
+    "userid": "fe9243bc-4b53-42da-9d1f-d2ce03d22744",
+    "emotions": [
+        {
+            "icon": "💚",
+            "emotion": "amused",
+            "context": "just a good day overall",
+            "time": "06-13-2021 15:17:18.577876"
+        }
+    ],
+    "daily_checkin_time": null
+}

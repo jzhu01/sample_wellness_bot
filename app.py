@@ -21,8 +21,10 @@ from botbuilder.schema import Activity, ActivityTypes
 from bot import MyBot
 from config import DefaultConfig
 from dialogs.user_checkin_dialog import UserCheckinDialog
+from storage.mongo_connnector import MongoConnection
 
 CONFIG = DefaultConfig()
+MONGO_CONN = MongoConnection()
 
 # Create adapter.
 # See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -65,7 +67,7 @@ CONVERSATION_STATE = ConversationState(MEMORY)
 USER_STATE = UserState(MEMORY)
 
 # Create the Bot
-DIALOG = UserCheckinDialog(USER_STATE)
+DIALOG = UserCheckinDialog(USER_STATE, MONGO_CONN)
 BOT = MyBot(CONVERSATION_STATE, USER_STATE, DIALOG)
 
 

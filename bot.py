@@ -40,6 +40,7 @@ class MyBot(ActivityHandler):
                 )
                 curr_user.set_username(member.name)
                 curr_user.set_userid(member.id)
+                print("Userid is: " + curr_user.userid)
                 message = Activity(
                     text=f"Hello {curr_user.name}! Let's check in! (Type anything to begin)",
                     type=ActivityTypes.message
@@ -49,7 +50,6 @@ class MyBot(ActivityHandler):
     async def on_turn(self, turn_context: TurnContext):
         await super().on_turn(turn_context)
 
-        # Save any state changes that might have ocurred during the turn.
         await self.conversation_state.save_changes(turn_context)
         await self.user_state.save_changes(turn_context)
 
